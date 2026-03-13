@@ -5,6 +5,7 @@ export interface StoryForCard {
   startupIcon?: string | null;
   slides: { type: string; data: Record<string, unknown> }[];
   views: number;
+  generatedAt?: number;
 }
 
 export function getStoryDisplayData(story: {

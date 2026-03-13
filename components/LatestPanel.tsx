@@ -7,6 +7,7 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { formatNumber } from '@/lib/formatNumber';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { getStoryDisplayData, type StoryForCard } from '@/lib/storyUtils';
 
 export function LatestPanel() {
@@ -31,7 +32,7 @@ export function LatestPanel() {
         <p className='mt-1 text-[10px] text-(--ink-muted)'>Newest stories</p>
       </div>
       <div
-        className='panel-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3'
+        className='panel-scroll min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-3'
         style={{ flex: '1 1 0' }}
       >
         {latest === undefined ? (
@@ -50,14 +51,14 @@ export function LatestPanel() {
             ))}
           </ul>
         ) : latest?.length ? (
-          <ul className='space-y-3'>
+          <ul className='min-w-0 space-y-3'>
             {latest.map((s) => {
               const { mrr } = getStoryDisplayData(s);
               return (
-                <li key={s._id}>
+                <li key={s._id} className='min-w-0'>
                   <Link
                     href={`/story/${s.startupSlug}/wrapped`}
-                    className='group flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 transition-colors hover:bg-(--accent-alt-soft)'
+                    className='group flex min-w-0 items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2.5 transition-colors hover:bg-(--accent-alt-soft)'
                   >
                     {s.startupIcon ? (
                       <Image
@@ -72,18 +73,23 @@ export function LatestPanel() {
                         {s.startupName[0]}
                       </div>
                     )}
-                    <div className='min-w-0 flex-1'>
+                    <div className='min-w-0 flex-1 overflow-hidden'>
                       <span className='block truncate text-sm font-medium text-foreground'>
                         {s.startupName}
                       </span>
-                      <div className='flex items-center gap-2 text-[10px]'>
+                      <div className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]'>
                         {mrr != null && (
-                          <span className='font-semibold tabular-nums text-(--hot)'>
+                          <span className='shrink-0 font-semibold tabular-nums text-(--hot)'>
                             {formatCurrency(mrr)}
                           </span>
                         )}
+                        {s.generatedAt != null && (
+                          <span className='min-w-0 truncate text-(--ink-muted)'>
+                            {formatRelativeTime(s.generatedAt)}
+                          </span>
+                        )}
                         {s.views != null && s.views > 0 && (
-                          <span className='text-(--ink-muted)'>
+                          <span className='min-w-0 truncate text-(--ink-muted)'>
                             {formatNumber(s.views)} views
                           </span>
                         )}

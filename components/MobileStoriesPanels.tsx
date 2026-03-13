@@ -7,6 +7,7 @@ import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { formatNumber, formatPercent } from '@/lib/formatNumber';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { getStoryDisplayData, type StoryForCard } from '@/lib/storyUtils';
 
 export function MobileStoriesPanels() {
@@ -31,7 +32,7 @@ export function MobileStoriesPanels() {
             ↑ Trending
           </span>
         </div>
-        <div className='panel-scroll max-h-48 space-y-0.5 overflow-y-auto'>
+        <div className='panel-scroll max-h-48 min-w-0 space-y-0.5 overflow-y-auto'>
           {trending === undefined ? (
             <>
               {Array.from({ length: 5 }).map((_, i) => (
@@ -128,7 +129,7 @@ export function MobileStoriesPanels() {
                 <Link
                   key={s._id}
                   href={`/story/${s.startupSlug}/wrapped`}
-                  className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition-colors ${
+                  className={`group flex min-w-0 items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 transition-colors ${
                     rankClass
                       ? 'hover:brightness-110 active:brightness-95'
                       : 'hover:bg-(--accent-soft)'
@@ -141,31 +142,35 @@ export function MobileStoriesPanels() {
                       alt=''
                       width={24}
                       height={24}
-                      className='size-6 rounded object-cover'
+                      className='size-6 shrink-0 rounded object-cover'
                     />
                   ) : (
-                    <div className='flex size-6 items-center justify-center rounded bg-(--void-4) text-[10px] font-bold text-(--neon)'>
+                    <div className='flex size-6 shrink-0 items-center justify-center rounded bg-(--void-4) text-[10px] font-bold text-(--neon)'>
                       {s.startupName[0]}
                     </div>
                   )}
-                  <span className='min-w-0 flex-1 truncate text-sm font-medium text-foreground'>
-                    {s.startupName}
-                  </span>
-                  {mrr != null && (
-                    <span className='text-[10px] font-semibold tabular-nums text-(--neon)'>
-                      {formatCurrency(mrr)}
+                  <div className='min-w-0 flex-1 overflow-hidden'>
+                    <span className='block truncate text-sm font-medium text-foreground'>
+                      {s.startupName}
                     </span>
-                  )}
-                  {growth30d != null && (
-                    <span className='rounded bg-(--accent-alt-soft) px-1 py-0.5 text-[10px] font-medium text-(--hot)'>
-                      +{formatPercent(growth30d)}
-                    </span>
-                  )}
-                  {s.views != null && s.views > 0 && (
-                    <span className='text-[10px] text-(--ink-muted)'>
-                      {formatNumber(s.views)} views
-                    </span>
-                  )}
+                    <div className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]'>
+                      {mrr != null && (
+                        <span className='shrink-0 font-semibold tabular-nums text-(--neon)'>
+                          {formatCurrency(mrr)}
+                        </span>
+                      )}
+                      {growth30d != null && (
+                        <span className='shrink-0 rounded bg-(--accent-alt-soft) px-1 py-0.5 font-medium text-(--hot)'>
+                          +{formatPercent(growth30d)}
+                        </span>
+                      )}
+                      {s.views != null && s.views > 0 && (
+                        <span className='min-w-0 truncate text-(--ink-muted)'>
+                          {formatNumber(s.views)} views
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </Link>
               );
             })
@@ -184,7 +189,7 @@ export function MobileStoriesPanels() {
             ◆ Latest
           </span>
         </div>
-        <div className='panel-scroll max-h-48 space-y-0.5 overflow-y-auto'>
+        <div className='panel-scroll max-h-48 min-w-0 space-y-0.5 overflow-y-auto'>
           {latest === undefined ? (
             <>
               {Array.from({ length: 5 }).map((_, i) => (
@@ -204,7 +209,7 @@ export function MobileStoriesPanels() {
                 <Link
                   key={s._id}
                   href={`/story/${s.startupSlug}/wrapped`}
-                  className='group flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition-colors hover:bg-(--accent-alt-soft)'
+                  className='group flex min-w-0 items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 transition-colors hover:bg-(--accent-alt-soft)'
                 >
                   {s.startupIcon ? (
                     <Image
@@ -212,26 +217,35 @@ export function MobileStoriesPanels() {
                       alt=''
                       width={24}
                       height={24}
-                      className='size-6 rounded object-cover'
+                      className='size-6 shrink-0 rounded object-cover'
                     />
                   ) : (
-                    <div className='flex size-6 items-center justify-center rounded bg-(--void-4) text-[10px] font-bold text-(--hot)'>
+                    <div className='flex size-6 shrink-0 items-center justify-center rounded bg-(--void-4) text-[10px] font-bold text-(--hot)'>
                       {s.startupName[0]}
                     </div>
                   )}
-                  <span className='min-w-0 flex-1 truncate text-sm font-medium text-foreground'>
-                    {s.startupName}
-                  </span>
-                  {mrr != null && (
-                    <span className='text-[10px] font-semibold tabular-nums text-(--hot)'>
-                      {formatCurrency(mrr)}
+                  <div className='min-w-0 flex-1 overflow-hidden'>
+                    <span className='block truncate text-sm font-medium text-foreground'>
+                      {s.startupName}
                     </span>
-                  )}
-                  {s.views != null && s.views > 0 && (
-                    <span className='text-[10px] text-(--ink-muted)'>
-                      {formatNumber(s.views)} views
-                    </span>
-                  )}
+                    <div className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]'>
+                      {mrr != null && (
+                        <span className='shrink-0 font-semibold tabular-nums text-(--hot)'>
+                          {formatCurrency(mrr)}
+                        </span>
+                      )}
+                      {s.generatedAt != null && (
+                        <span className='min-w-0 truncate text-(--ink-muted)'>
+                          {formatRelativeTime(s.generatedAt)}
+                        </span>
+                      )}
+                      {s.views != null && s.views > 0 && (
+                        <span className='min-w-0 truncate text-(--ink-muted)'>
+                          {formatNumber(s.views)} views
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </Link>
               );
             })
