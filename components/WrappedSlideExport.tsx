@@ -13,11 +13,13 @@ interface Slide {
   data: Record<string, unknown>;
 }
 
-const NEON_GRADIENT =
-  'linear-gradient(90deg, #00a080 0%, #00ffc8 20%, #00e5aa 40%, #00ffc8 60%, #00e5aa 80%, #00a080 100%)';
-const HOT_GRADIENT =
-  'linear-gradient(90deg, #cc2244 0%, #ff3366 20%, #ff5c82 40%, #ff3366 60%, #ff5c82 80%, #cc2244 100%)';
+const NEON_COLOR = '#00ffc8';
+const HOT_COLOR = '#ff3366';
 
+/**
+ * Solid color text for export - background-clip:text fails in html-to-image
+ * canvas capture (renders as solid block), so we use solid accent colors.
+ */
 function StaticGradientText({
   children,
   gradient = 'neon',
@@ -26,14 +28,7 @@ function StaticGradientText({
   gradient?: 'neon' | 'hot';
 }) {
   return (
-    <span
-      style={{
-        background: gradient === 'neon' ? NEON_GRADIENT : HOT_GRADIENT,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
-      }}
-    >
+    <span style={{ color: gradient === 'neon' ? NEON_COLOR : HOT_COLOR }}>
       {children}
     </span>
   );
@@ -297,7 +292,7 @@ export function WrappedSlideExport({
         {slideContent}
       </div>
       <div className='shrink-0 pb-6 pt-2 text-center text-[10px] font-medium uppercase tracking-[0.5em] text-white'>
-        MRRStory
+        MRRStory.xyz
       </div>
     </div>
   );

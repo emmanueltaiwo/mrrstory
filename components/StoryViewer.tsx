@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'motion/react';
 import { toPng } from 'html-to-image';
+import JSZip from 'jszip';
 import Link from 'next/link';
 import { WrappedSlide } from './WrappedSlide';
 import { WrappedSlideExport } from './WrappedSlideExport';
@@ -57,11 +59,20 @@ export function StoryViewer({
     containerRef.current?.focus({ preventScroll: true });
   }, []);
 
+  const getExportBackground = (slideIndex: number) => {
+    if (slideIndex % 3 === 0) {
+      return 'radial-gradient(ellipse 180% 150% at 50% 10%, rgba(0,255,200,0.22) 0%, rgba(0,255,200,0.1) 30%, rgba(0,120,100,0.05) 60%, rgba(0,40,35,0.02) 100%), radial-gradient(ellipse 140% 100% at 50% 100%, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.02) 50% 100%), #08090a';
+    }
+    if (slideIndex % 3 === 1) {
+      return 'radial-gradient(ellipse 180% 150% at 50% 90%, rgba(255,51,102,0.2) 0%, rgba(255,51,102,0.09) 30%, rgba(120,30,50,0.04) 60%, rgba(40,10,18,0.02) 100%), radial-gradient(ellipse 140% 100% at 50% 0%, rgba(0,255,200,0.09) 0%, rgba(0,255,200,0.02) 50% 100%), #08090a';
+    }
+    return 'radial-gradient(ellipse 160% 120% at 0% 50%, rgba(0,255,200,0.14) 0%, rgba(0,255,200,0.05) 45%, rgba(0,60,50,0.02) 100%), radial-gradient(ellipse 160% 120% at 100% 50%, rgba(255,51,102,0.14) 0%, rgba(255,51,102,0.05) 45%, rgba(60,15,28,0.02) 100%), radial-gradient(ellipse 120% 100% at 50% 50%, rgba(0,255,200,0.03) 0%, rgba(255,51,102,0.02) 100%), #08090a';
+  };
+
   const handleExport = async () => {
     setExporting(true);
     setShowExportFrame(true);
     try {
-      // Wait for export frame to render on screen
       await new Promise((r) => setTimeout(r, 400));
       if (!exportFrameRef.current) return;
       const dataUrl = await toPng(exportFrameRef.current, {
@@ -82,6 +93,62 @@ export function StoryViewer({
     }
   };
 
+  const handleExportAll = useCallback(async () => {
+    setExporting(true);
+    const zip = new JSZip();
+    const safeName = startupName
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9-_]/g, '');
+    const opts = {
+      width: EXPORT_WIDTH,
+      height: EXPORT_HEIGHT,
+      pixelRatio: 2,
+      cacheBust: true,
+    };
+    const container = document.createElement('div');
+    container.style.cssText =
+      'position:fixed;left:-9999px;top:0;width:390px;height:844px;overflow:hidden;';
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    try {
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        root.render(
+          <div
+            style={{
+              width: EXPORT_WIDTH,
+              height: EXPORT_HEIGHT,
+              overflow: 'hidden',
+            }}
+          >
+            <WrappedSlideExport
+              slide={slide}
+              background={getExportBackground(i)}
+            />
+          </div>,
+        );
+        await new Promise((r) => setTimeout(r, 300));
+        const dataUrl = await toPng(container.firstChild as HTMLElement, opts);
+        const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+        zip.file(`slide-${String(i + 1).padStart(2, '0')}.png`, base64, {
+          base64: true,
+        });
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `mrrstory-${safeName}-all-slides.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      root.unmount();
+      document.body.removeChild(container);
+      setExporting(false);
+    }
+  }, [slides, startupName]);
+
   const slide = slides[index];
 
   const handleAreaClick = useCallback(
@@ -92,16 +159,6 @@ export function StoryViewer({
     },
     [goPrev, goNext],
   );
-
-  const getExportBackground = () => {
-    if (index % 3 === 0) {
-      return 'radial-gradient(ellipse 180% 150% at 50% 10%, rgba(0,255,200,0.22) 0%, rgba(0,255,200,0.1) 30%, rgba(0,120,100,0.05) 60%, rgba(0,40,35,0.02) 100%), radial-gradient(ellipse 140% 100% at 50% 100%, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.02) 50% 100%), #08090a';
-    }
-    if (index % 3 === 1) {
-      return 'radial-gradient(ellipse 180% 150% at 50% 90%, rgba(255,51,102,0.2) 0%, rgba(255,51,102,0.09) 30%, rgba(120,30,50,0.04) 60%, rgba(40,10,18,0.02) 100%), radial-gradient(ellipse 140% 100% at 50% 0%, rgba(0,255,200,0.09) 0%, rgba(0,255,200,0.02) 50% 100%), #08090a';
-    }
-    return 'radial-gradient(ellipse 160% 120% at 0% 50%, rgba(0,255,200,0.14) 0%, rgba(0,255,200,0.05) 45%, rgba(0,60,50,0.02) 100%), radial-gradient(ellipse 160% 120% at 100% 50%, rgba(255,51,102,0.14) 0%, rgba(255,51,102,0.05) 45%, rgba(60,15,28,0.02) 100%), radial-gradient(ellipse 120% 100% at 50% 50%, rgba(0,255,200,0.03) 0%, rgba(255,51,102,0.02) 100%), #08090a';
-  };
 
   return (
     <>
@@ -166,16 +223,30 @@ export function StoryViewer({
           <span className='font-mono text-[10px] text-white/40'>
             {index + 1}/{slides.length}
           </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExport();
-            }}
-            disabled={exporting}
-            className='rounded-full bg-black/30 px-3 py-1.5 text-xs text-white/70 backdrop-blur-xl transition hover:bg-black/50 hover:text-(--neon) disabled:opacity-50'
-          >
-            {exporting ? '…' : 'Export'}
-          </button>
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExportAll();
+              }}
+              disabled={exporting}
+              className='rounded-full bg-black/30 px-3 py-1.5 text-xs text-white/70 backdrop-blur-xl transition hover:bg-black/50 hover:text-(--neon) disabled:opacity-50'
+              title='Download all slides as ZIP'
+            >
+              {exporting ? '…' : 'All'}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExport();
+              }}
+              disabled={exporting}
+              className='rounded-full bg-black/30 px-3 py-1.5 text-xs text-white/70 backdrop-blur-xl transition hover:bg-black/50 hover:text-(--neon) disabled:opacity-50'
+              title='Export current slide'
+            >
+              {exporting ? '…' : 'Export'}
+            </button>
+          </div>
         </header>
 
         <div className='relative flex flex-1 pt-10'>
@@ -201,6 +272,37 @@ export function StoryViewer({
             onClick={handleAreaClick('next')}
             aria-label='Next slide'
           />
+
+          {/* Download all - show on last slide */}
+          {index === slides.length - 1 && slides.length > 1 && (
+            <div className='absolute bottom-8 left-1/2 z-40 -translate-x-1/2'>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExportAll();
+                }}
+                disabled={exporting}
+                className='flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-5 py-2.5 text-sm font-medium text-white/90 backdrop-blur-xl transition hover:border-(--neon)/50 hover:bg-black/70 hover:text-(--neon) disabled:opacity-50'
+                title='Download all slides as ZIP'
+              >
+                <svg
+                  className='size-4 shrink-0'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  viewBox='0 0 24 24'
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
+                  />
+                </svg>
+                {exporting ? 'Preparing…' : 'Download all slides'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -216,7 +318,7 @@ export function StoryViewer({
           >
             <WrappedSlideExport
               slide={slide}
-              background={getExportBackground()}
+              background={getExportBackground(index)}
             />
           </div>
         </div>
