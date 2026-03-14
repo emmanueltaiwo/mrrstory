@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { internalQuery, mutation, query } from './_generated/server';
 
 export const getById = query({
   args: { id: v.id('stories') },
@@ -103,6 +103,14 @@ export const createOrUpdate = mutation({
       generatedAt: now,
       updatedAt: now,
     });
+  },
+});
+
+export const listAllForRefresh = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const stories = await ctx.db.query('stories').collect();
+    return stories.map((s) => ({ id: s._id, startupSlug: s.startupSlug }));
   },
 });
 

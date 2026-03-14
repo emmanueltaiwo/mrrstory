@@ -8,7 +8,9 @@
  * @module
  */
 
+import type * as crons from "../crons.js";
 import type * as ensureStory from "../ensureStory.js";
+import type * as refreshStories from "../refreshStories.js";
 import type * as stories from "../stories.js";
 import type * as trustmrr from "../trustmrr.js";
 
@@ -19,7 +21,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  crons: typeof crons;
   ensureStory: typeof ensureStory;
+  refreshStories: typeof refreshStories;
   stories: typeof stories;
   trustmrr: typeof trustmrr;
 }>;
