@@ -38,6 +38,7 @@ export function StoryViewer({
   const slideRef = useRef<HTMLDivElement>(null);
   const exportFrameRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const canGoNext = index < slides.length - 1;
   const canGoPrev = index > 0;
@@ -57,6 +58,21 @@ export function StoryViewer({
   // Auto-focus container on mount so arrow keys work immediately
   useEffect(() => {
     containerRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio('/music.mp3');
+    audio.loop = true;
+    audio.preload = 'auto';
+    audioRef.current = audio;
+    const play = () => {
+      audio.play().catch(() => {});
+    };
+    play();
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
   }, []);
 
   const getExportBackground = (slideIndex: number) => {
