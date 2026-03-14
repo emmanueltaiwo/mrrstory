@@ -165,10 +165,34 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
   }
 
   if (type === 'revenue') {
-    const mrr = (data.mrr as number) ?? 0;
-    const last30 = (data.last30Days as number) ?? 0;
-    const total = (data.total as number) ?? 0;
-    const customers = (data.customers as number) ?? 0;
+    const mrr = data.mrr != null ? (data.mrr as number) : null;
+    const last30 = data.last30Days != null ? (data.last30Days as number) : null;
+    const total = data.total != null ? (data.total as number) : null;
+    const customers =
+      data.customers != null ? (data.customers as number) : null;
+    if (mrr == null && last30 == null && total == null && customers == null)
+      return null;
+    const cards = [
+      mrr != null && { label: 'MRR', value: formatCurrency(mrr), accent: true },
+      last30 != null && {
+        label: 'Last 30d',
+        value: formatCurrency(last30),
+        accent: false,
+      },
+      total != null && {
+        label: 'All time',
+        value: formatCurrency(total),
+        accent: false,
+      },
+    ].filter(Boolean) as { label: string; value: string; accent: boolean }[];
+    const subtitle =
+      mrr != null && customers != null
+        ? `MRR · ${formatNumber(customers)} customers`
+        : mrr != null
+          ? 'MRR'
+          : customers != null
+            ? `${formatNumber(customers)} customers`
+            : null;
     return (
       <motion.div
         key={slide.id}
@@ -189,74 +213,70 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           The number that matters
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.85, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ ...t, delay: 0.2, duration: 0.7 }}
-          className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='neon' shimmer>
-            {formatCurrency(mrr)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-2 font-semibold text-white/80 ${subClass}`}
-        >
-          MRR · {formatNumber(customers)} customers
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...t, delay: 0.5 }}
-          className={`mt-10 flex flex-wrap justify-center gap-4 ${spacing}`}
-        >
-          {[
-            { label: 'MRR', value: formatCurrency(mrr), accent: true },
-            {
-              label: 'Last 30d',
-              value: formatCurrency(last30),
-              accent: false,
-            },
-            {
-              label: 'All time',
-              value: formatCurrency(total),
-              accent: false,
-            },
-          ].map((item, i) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, y: 16, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ ...t, delay: 0.55 + i * 0.08 }}
-              className={`card-glow-neon relative overflow-hidden rounded-2xl border px-6 py-4 text-center backdrop-blur-md md:rounded-3xl md:px-8 md:py-5 ${
-                item.accent
-                  ? 'border-(--neon)/40 bg-(--neon)/10'
-                  : 'border-white/15 bg-white/5'
-              }`}
-            >
-              <span className='block text-xs uppercase tracking-wider text-white/50'>
-                {item.label}
-              </span>
-              <span
-                className={`font-display text-xl font-bold md:text-2xl ${item.accent ? 'text-(--neon)' : 'text-white/90'}`}
+        {mrr != null && (
+          <motion.p
+            initial={{ opacity: 0, scale: 0.85, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ ...t, delay: 0.2, duration: 0.7 }}
+            className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
+            style={heroSize}
+          >
+            <GradientText gradient='neon' shimmer>
+              {formatCurrency(mrr)}
+            </GradientText>
+          </motion.p>
+        )}
+        {subtitle && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ...t, delay: 0.35 }}
+            className={`mt-2 font-semibold text-white/80 ${subClass}`}
+          >
+            {subtitle}
+          </motion.p>
+        )}
+        {cards.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...t, delay: 0.5 }}
+            className={`mt-10 flex flex-wrap justify-center gap-4 ${spacing}`}
+          >
+            {cards.map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ ...t, delay: 0.55 + i * 0.08 }}
+                className={`card-glow-neon relative overflow-hidden rounded-2xl border px-6 py-4 text-center backdrop-blur-md md:rounded-3xl md:px-8 md:py-5 ${
+                  item.accent
+                    ? 'border-(--neon)/40 bg-(--neon)/10'
+                    : 'border-white/15 bg-white/5'
+                }`}
               >
-                {item.value}
-              </span>
-            </motion.div>
-          ))}
-        </motion.div>
+                <span className='block text-xs uppercase tracking-wider text-white/50'>
+                  {item.label}
+                </span>
+                <span
+                  className={`font-display text-xl font-bold md:text-2xl ${item.accent ? 'text-(--neon)' : 'text-white/90'}`}
+                >
+                  {item.value}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </motion.div>
     );
   }
 
   if (type === 'growth') {
-    const g30 = (data.growth30d as number) ?? 0;
-    const gMrr = (data.growthMRR30d as number) ?? 0;
-    const isPositive = g30 > 0;
+    const g30 = data.growth30d != null ? (data.growth30d as number) : null;
+    const gMrr =
+      data.growthMRR30d != null ? (data.growthMRR30d as number) : null;
+    const isPositive = g30 != null ? g30 > 0 : false;
+    if (g30 == null && gMrr == null) return null;
     return (
       <motion.div
         key={slide.id}
@@ -277,43 +297,56 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           {isPositive ? 'On the rise ↑' : '30-day snapshot'}
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ ...t, delay: 0.2, duration: 0.7 }}
-          className='hero-glow-hot float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='hot' shimmer>
-            {formatPercent(g30)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-3 text-white/60 ${subClass}`}
-        >
-          revenue growth
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ ...t, delay: 0.5 }}
-          className='mt-8 rounded-2xl border border-(--hot)/30 bg-(--hot)/5 px-10 py-4 backdrop-blur-md md:rounded-3xl md:px-12 md:py-5'
-        >
-          <span className='text-sm text-white/50'>MRR growth </span>
-          <span className='font-display text-2xl font-bold text-(--hot) md:text-3xl'>
-            {formatPercent(gMrr)}
-          </span>
-        </motion.div>
+        {g30 != null && (
+          <>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ ...t, delay: 0.2, duration: 0.7 }}
+              className='hero-glow-hot float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
+              style={heroSize}
+            >
+              <GradientText gradient='hot' shimmer>
+                {formatPercent(g30)}
+              </GradientText>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...t, delay: 0.35 }}
+              className={`mt-3 text-white/60 ${subClass}`}
+            >
+              revenue growth
+            </motion.p>
+          </>
+        )}
+        {gMrr != null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...t, delay: 0.5 }}
+            className='mt-8 rounded-2xl border border-(--hot)/30 bg-(--hot)/5 px-10 py-4 backdrop-blur-md md:rounded-3xl md:px-12 md:py-5'
+          >
+            <span className='text-sm text-white/50'>MRR growth </span>
+            <span className='font-display text-2xl font-bold text-(--hot) md:text-3xl'>
+              {formatPercent(gMrr)}
+            </span>
+          </motion.div>
+        )}
       </motion.div>
     );
   }
 
   if (type === 'traffic') {
-    const visitors = (data.visitorsLast30Days as number) ?? 0;
-    const impressions = (data.googleSearchImpressionsLast30Days as number) ?? 0;
+    const visitors =
+      data.visitorsLast30Days != null
+        ? (data.visitorsLast30Days as number)
+        : null;
+    const impressions =
+      data.googleSearchImpressionsLast30Days != null
+        ? (data.googleSearchImpressionsLast30Days as number)
+        : null;
+    if (visitors == null && impressions == null) return null;
     return (
       <motion.div
         key={slide.id}
@@ -334,26 +367,30 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           People showing up
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.9, y: 24 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ ...t, delay: 0.2, duration: 0.7 }}
-          className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='neon' shimmer>
-            {formatNumber(visitors)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-2 text-white/70 ${subClass}`}
-        >
-          visitors in 30 days
-        </motion.p>
-        {impressions > 0 && (
+        {visitors != null && (
+          <>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.9, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ ...t, delay: 0.2, duration: 0.7 }}
+              className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
+              style={heroSize}
+            >
+              <GradientText gradient='neon' shimmer>
+                {formatNumber(visitors)}
+              </GradientText>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...t, delay: 0.35 }}
+              className={`mt-2 text-white/70 ${subClass}`}
+            >
+              visitors in 30 days
+            </motion.p>
+          </>
+        )}
+        {impressions != null && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -373,8 +410,15 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
   }
 
   if (type === 'efficiency') {
-    const rpv = (data.revenuePerVisitor as number) ?? 0;
-    const margin = (data.profitMarginLast30Days as number) ?? 0;
+    const rpv =
+      data.revenuePerVisitor != null
+        ? (data.revenuePerVisitor as number)
+        : null;
+    const margin =
+      data.profitMarginLast30Days != null
+        ? (data.profitMarginLast30Days as number)
+        : null;
+    if (rpv == null && margin == null) return null;
     return (
       <motion.div
         key={slide.id}
@@ -395,45 +439,56 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           Conversion power
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ ...t, delay: 0.2 }}
-          className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='neon' shimmer>
-            ${rpv.toFixed(2)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-1 text-white/70 ${subClass}`}
-        >
-          per visitor
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ ...t, delay: 0.5 }}
-          className='mt-10 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-10 py-5 backdrop-blur-md md:rounded-3xl md:px-12 md:py-6'
-        >
-          <span className='font-display text-3xl font-extrabold text-white md:text-4xl'>
-            {margin.toFixed(0)}%
-          </span>
-          <span className='ml-3 text-lg text-white/60 md:text-xl'>
-            profit margin
-          </span>
-        </motion.div>
+        {rpv != null && (
+          <>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ ...t, delay: 0.2 }}
+              className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
+              style={heroSize}
+            >
+              <GradientText gradient='neon' shimmer>
+                ${rpv.toFixed(2)}
+              </GradientText>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...t, delay: 0.35 }}
+              className={`mt-1 text-white/70 ${subClass}`}
+            >
+              per visitor
+            </motion.p>
+          </>
+        )}
+        {margin != null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...t, delay: 0.5 }}
+            className='mt-10 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-10 py-5 backdrop-blur-md md:rounded-3xl md:px-12 md:py-6'
+          >
+            <span className='font-display text-3xl font-extrabold text-white md:text-4xl'>
+              {margin.toFixed(0)}%
+            </span>
+            <span className='ml-3 text-lg text-white/60 md:text-xl'>
+              profit margin
+            </span>
+          </motion.div>
+        )}
       </motion.div>
     );
   }
 
   if (type === 'subscriptions') {
-    const subs = (data.activeSubscriptions as number) ?? 0;
-    const provider = (data.paymentProvider as string) ?? '';
+    const subs =
+      data.activeSubscriptions != null
+        ? (data.activeSubscriptions as number)
+        : null;
+    const provider =
+      data.paymentProvider != null ? (data.paymentProvider as string) : null;
+    if (subs == null && provider == null) return null;
     return (
       <motion.div
         key={slide.id}
@@ -453,42 +508,50 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           Recurring magic
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ ...t, delay: 0.2 }}
-          className='hero-glow-hot float-subtle mt-5 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='hot' shimmer>
-            {formatNumber(subs)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-2 text-white/70 ${subClass}`}
-        >
-          active subscriptions
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...t, delay: 0.5 }}
-          className='mt-8'
-        >
-          <StatPill className='max-w-full truncate border-(--hot)/20 bg-(--hot)/5 px-6 py-3 md:px-8 md:py-4'>
-            powered by {provider}
-          </StatPill>
-        </motion.div>
+        {subs != null && (
+          <>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ ...t, delay: 0.2 }}
+              className='hero-glow-hot float-subtle mt-5 max-w-full break-all font-display font-extrabold'
+              style={heroSize}
+            >
+              <GradientText gradient='hot' shimmer>
+                {formatNumber(subs)}
+              </GradientText>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...t, delay: 0.35 }}
+              className={`mt-2 text-white/70 ${subClass}`}
+            >
+              active subscriptions
+            </motion.p>
+          </>
+        )}
+        {provider != null && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...t, delay: 0.5 }}
+            className='mt-8'
+          >
+            <StatPill className='max-w-full truncate border-(--hot)/20 bg-(--hot)/5 px-6 py-3 md:px-8 md:py-4'>
+              powered by {provider}
+            </StatPill>
+          </motion.div>
+        )}
       </motion.div>
     );
   }
 
   if (type === 'sale') {
-    const price = (data.askingPrice as number) ?? 0;
-    const multi = (data.multiple as number) ?? 0;
+    const price =
+      data.askingPrice != null ? (data.askingPrice as number) : null;
+    const multi = data.multiple != null ? (data.multiple as number) : null;
+    if (price == null && multi == null) return null;
     return (
       <motion.div
         key={slide.id}
@@ -509,38 +572,44 @@ export function WrappedSlide({ slide, index, compact = false }: SlideProps) {
         >
           On the market
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.85, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ ...t, delay: 0.2, duration: 0.7 }}
-          className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
-          style={heroSize}
-        >
-          <GradientText gradient='neon' shimmer>
-            {formatCurrencyFull(price)}
-          </GradientText>
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...t, delay: 0.35 }}
-          className={`mt-2 text-white/60 ${subClass}`}
-        >
-          asking price
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ ...t, delay: 0.5 }}
-          className='mt-10 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-10 py-5 backdrop-blur-md md:rounded-3xl md:px-12 md:py-6'
-        >
-          <span className='font-display text-3xl font-extrabold text-white md:text-4xl'>
-            {multi.toFixed(1)}x
-          </span>
-          <span className='ml-3 text-lg text-white/60 md:text-xl'>
-            revenue multiple
-          </span>
-        </motion.div>
+        {price != null && (
+          <>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.85, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ ...t, delay: 0.2, duration: 0.7 }}
+              className='hero-glow-neon float-subtle mt-3 min-w-0 max-w-full break-all font-display font-extrabold'
+              style={heroSize}
+            >
+              <GradientText gradient='neon' shimmer>
+                {formatCurrencyFull(price)}
+              </GradientText>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...t, delay: 0.35 }}
+              className={`mt-2 text-white/60 ${subClass}`}
+            >
+              asking price
+            </motion.p>
+          </>
+        )}
+        {multi != null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...t, delay: 0.5 }}
+            className='mt-10 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-10 py-5 backdrop-blur-md md:rounded-3xl md:px-12 md:py-6'
+          >
+            <span className='font-display text-3xl font-extrabold text-white md:text-4xl'>
+              {multi.toFixed(1)}x
+            </span>
+            <span className='ml-3 text-lg text-white/60 md:text-xl'>
+              revenue multiple
+            </span>
+          </motion.div>
+        )}
       </motion.div>
     );
   }

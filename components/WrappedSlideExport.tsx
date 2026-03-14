@@ -109,161 +109,293 @@ export function WrappedSlideExport({
         </div>
       </div>
     ) : type === 'revenue' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='-right-24 top-1/3 h-48 w-48 -translate-y-1/2 bg-(--neon)' />
-        <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
-        <StaticOrb className='right-[10%] top-1/4 h-2 w-2 bg-(--neon)' />
-        <p className={labelClass}>The number that matters</p>
-        <p
-          className='mt-2 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='neon'>
-            {formatCurrency((data.mrr as number) ?? 0)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-1 text-lg font-semibold text-white/80'>
-          MRR · {formatNumber((data.customers as number) ?? 0)} customers
-        </p>
-        <div className='mt-6 flex flex-wrap justify-center gap-3'>
-          <div className='rounded-2xl border border-(--neon)/40 bg-(--neon)/10 px-5 py-3 text-center'>
-            <span className='block text-xs uppercase text-white/50'>MRR</span>
-            <span className='font-display text-lg font-bold text-(--neon)'>
-              {formatCurrency((data.mrr as number) ?? 0)}
-            </span>
+      (() => {
+        const mrr = data.mrr != null ? (data.mrr as number) : null;
+        const last30 =
+          data.last30Days != null ? (data.last30Days as number) : null;
+        const total = data.total != null ? (data.total as number) : null;
+        const customers =
+          data.customers != null ? (data.customers as number) : null;
+        if (mrr == null && last30 == null && total == null && customers == null)
+          return null;
+        const cards = [
+          mrr != null && {
+            label: 'MRR',
+            value: formatCurrency(mrr),
+            accent: true,
+          },
+          last30 != null && {
+            label: 'Last 30d',
+            value: formatCurrency(last30),
+            accent: false,
+          },
+          total != null && {
+            label: 'All time',
+            value: formatCurrency(total),
+            accent: false,
+          },
+        ].filter(Boolean) as {
+          label: string;
+          value: string;
+          accent: boolean;
+        }[];
+        const subtitle =
+          mrr != null && customers != null
+            ? `MRR · ${formatNumber(customers)} customers`
+            : mrr != null
+              ? 'MRR'
+              : customers != null
+                ? `${formatNumber(customers)} customers`
+                : null;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='-right-24 top-1/3 h-48 w-48 -translate-y-1/2 bg-(--neon)' />
+            <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
+            <StaticOrb className='right-[10%] top-1/4 h-2 w-2 bg-(--neon)' />
+            <p className={labelClass}>The number that matters</p>
+            {mrr != null && (
+              <p
+                className='mt-2 font-display font-extrabold break-all'
+                style={heroSize}
+              >
+                <StaticGradientText gradient='neon'>
+                  {formatCurrency(mrr)}
+                </StaticGradientText>
+              </p>
+            )}
+            {subtitle && (
+              <p className='mt-1 text-lg font-semibold text-white/80'>
+                {subtitle}
+              </p>
+            )}
+            {cards.length > 0 && (
+              <div className='mt-6 flex flex-wrap justify-center gap-3'>
+                {cards.map((item) => (
+                  <div
+                    key={item.label}
+                    className={`rounded-2xl px-5 py-3 text-center ${
+                      item.accent
+                        ? 'border border-(--neon)/40 bg-(--neon)/10'
+                        : 'border border-white/15 bg-white/5'
+                    }`}
+                  >
+                    <span className='block text-xs uppercase text-white/50'>
+                      {item.label}
+                    </span>
+                    <span
+                      className={`font-display text-lg font-bold ${item.accent ? 'text-(--neon)' : 'text-white/90'}`}
+                    >
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div className='rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center'>
-            <span className='block text-xs uppercase text-white/50'>
-              Last 30d
-            </span>
-            <span className='font-display text-lg font-bold text-white/90'>
-              {formatCurrency((data.last30Days as number) ?? 0)}
-            </span>
-          </div>
-          <div className='rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center'>
-            <span className='block text-xs uppercase text-white/50'>
-              All time
-            </span>
-            <span className='font-display text-lg font-bold text-white/90'>
-              {formatCurrency((data.total as number) ?? 0)}
-            </span>
-          </div>
-        </div>
-      </div>
+        );
+      })()
     ) : type === 'growth' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='-left-24 top-1/3 h-48 w-48 bg-(--hot)' />
-        <StaticBlob className='-right-20 bottom-1/3 h-40 w-40 bg-(--neon)' />
-        <p className={labelClass}>
-          {((data.growth30d as number) ?? 0) > 0
-            ? 'On the rise ↑'
-            : '30-day snapshot'}
-        </p>
-        <p
-          className='mt-2 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='hot'>
-            {formatPercent((data.growth30d as number) ?? 0)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-2 text-base text-white/60'>revenue growth</p>
-        <div className='mt-6 rounded-2xl border border-(--hot)/30 bg-(--hot)/5 px-8 py-4'>
-          <span className='text-sm text-white/50'>MRR growth </span>
-          <span className='font-display font-bold text-(--hot)'>
-            {formatPercent((data.growthMRR30d as number) ?? 0)}
-          </span>
-        </div>
-      </div>
-    ) : type === 'traffic' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='bottom-0 left-1/2 h-40 w-56 -translate-x-1/2 translate-y-1/2 bg-(--neon)' />
-        <StaticOrb className='left-1/4 top-1/4 h-2 w-2 bg-(--neon)' />
-        <p className={labelClass}>People showing up</p>
-        <p
-          className='mt-2 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='neon'>
-            {formatNumber((data.visitorsLast30Days as number) ?? 0)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-1 text-base text-white/70'>visitors in 30 days</p>
-        {((data.googleSearchImpressionsLast30Days as number) ?? 0) > 0 && (
-          <div className='mt-6 rounded-2xl border border-(--neon)/25 bg-(--neon)/5 px-6 py-3'>
-            <span className='font-bold text-(--neon)'>
-              {formatNumber(
-                (data.googleSearchImpressionsLast30Days as number) ?? 0,
-              )}
-            </span>
-            <span className='ml-2 text-sm text-white/50'>
-              search impressions
-            </span>
+      (() => {
+        const g30 = data.growth30d != null ? (data.growth30d as number) : null;
+        const gMrr =
+          data.growthMRR30d != null ? (data.growthMRR30d as number) : null;
+        if (g30 == null && gMrr == null) return null;
+        const isPositive = g30 != null ? g30 > 0 : false;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='-left-24 top-1/3 h-48 w-48 bg-(--hot)' />
+            <StaticBlob className='-right-20 bottom-1/3 h-40 w-40 bg-(--neon)' />
+            <p className={labelClass}>
+              {isPositive ? 'On the rise ↑' : '30-day snapshot'}
+            </p>
+            {g30 != null && (
+              <>
+                <p
+                  className='mt-2 font-display font-extrabold break-all'
+                  style={heroSize}
+                >
+                  <StaticGradientText gradient='hot'>
+                    {formatPercent(g30)}
+                  </StaticGradientText>
+                </p>
+                <p className='mt-2 text-base text-white/60'>revenue growth</p>
+              </>
+            )}
+            {gMrr != null && (
+              <div className='mt-6 rounded-2xl border border-(--hot)/30 bg-(--hot)/5 px-8 py-4'>
+                <span className='text-sm text-white/50'>MRR growth </span>
+                <span className='font-display font-bold text-(--hot)'>
+                  {formatPercent(gMrr)}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })()
+    ) : type === 'traffic' ? (
+      (() => {
+        const visitors =
+          data.visitorsLast30Days != null
+            ? (data.visitorsLast30Days as number)
+            : null;
+        const impressions =
+          data.googleSearchImpressionsLast30Days != null
+            ? (data.googleSearchImpressionsLast30Days as number)
+            : null;
+        if (visitors == null && impressions == null) return null;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='bottom-0 left-1/2 h-40 w-56 -translate-x-1/2 translate-y-1/2 bg-(--neon)' />
+            <StaticOrb className='left-1/4 top-1/4 h-2 w-2 bg-(--neon)' />
+            <p className={labelClass}>People showing up</p>
+            {visitors != null && (
+              <>
+                <p
+                  className='mt-2 font-display font-extrabold break-all'
+                  style={heroSize}
+                >
+                  <StaticGradientText gradient='neon'>
+                    {formatNumber(visitors)}
+                  </StaticGradientText>
+                </p>
+                <p className='mt-1 text-base text-white/70'>
+                  visitors in 30 days
+                </p>
+              </>
+            )}
+            {impressions != null && (
+              <div className='mt-6 rounded-2xl border border-(--neon)/25 bg-(--neon)/5 px-6 py-3'>
+                <span className='font-bold text-(--neon)'>
+                  {formatNumber(impressions)}
+                </span>
+                <span className='ml-2 text-sm text-white/50'>
+                  search impressions
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()
     ) : type === 'efficiency' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='-right-24 top-1/3 h-48 w-48 bg-(--neon)' />
-        <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
-        <p className={labelClass}>Conversion power</p>
-        <p
-          className='mt-2 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='neon'>
-            ${((data.revenuePerVisitor as number) ?? 0).toFixed(2)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-1 text-base text-white/70'>per visitor</p>
-        <div className='mt-8 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-8 py-5'>
-          <span className='font-display text-2xl font-extrabold text-white'>
-            {((data.profitMarginLast30Days as number) ?? 0).toFixed(0)}%
-          </span>
-          <span className='ml-2 text-base text-white/60'>profit margin</span>
-        </div>
-      </div>
+      (() => {
+        const rpv =
+          data.revenuePerVisitor != null
+            ? (data.revenuePerVisitor as number)
+            : null;
+        const margin =
+          data.profitMarginLast30Days != null
+            ? (data.profitMarginLast30Days as number)
+            : null;
+        if (rpv == null && margin == null) return null;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='-right-24 top-1/3 h-48 w-48 bg-(--neon)' />
+            <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
+            <p className={labelClass}>Conversion power</p>
+            {rpv != null && (
+              <>
+                <p
+                  className='mt-2 font-display font-extrabold break-all'
+                  style={heroSize}
+                >
+                  <StaticGradientText gradient='neon'>
+                    ${rpv.toFixed(2)}
+                  </StaticGradientText>
+                </p>
+                <p className='mt-1 text-base text-white/70'>per visitor</p>
+              </>
+            )}
+            {margin != null && (
+              <div className='mt-8 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-8 py-5'>
+                <span className='font-display text-2xl font-extrabold text-white'>
+                  {margin.toFixed(0)}%
+                </span>
+                <span className='ml-2 text-base text-white/60'>
+                  profit margin
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()
     ) : type === 'subscriptions' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='left-1/2 top-1/4 h-40 w-40 -translate-x-1/2 bg-(--hot)' />
-        <StaticOrb className='left-1/4 top-1/3 h-2 w-2 bg-(--hot)' />
-        <p className={labelClass}>Recurring magic</p>
-        <p
-          className='mt-5 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='hot'>
-            {formatNumber((data.activeSubscriptions as number) ?? 0)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-2 text-base text-white/70'>active subscriptions</p>
-        <div className='mt-6 rounded-2xl border border-(--hot)/20 bg-(--hot)/5 px-6 py-3'>
-          powered by {String(data.paymentProvider ?? '')}
-        </div>
-      </div>
+      (() => {
+        const subs =
+          data.activeSubscriptions != null
+            ? (data.activeSubscriptions as number)
+            : null;
+        const provider =
+          data.paymentProvider != null
+            ? (data.paymentProvider as string)
+            : null;
+        if (subs == null && provider == null) return null;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='left-1/2 top-1/4 h-40 w-40 -translate-x-1/2 bg-(--hot)' />
+            <StaticOrb className='left-1/4 top-1/3 h-2 w-2 bg-(--hot)' />
+            <p className={labelClass}>Recurring magic</p>
+            {subs != null && (
+              <>
+                <p
+                  className='mt-5 font-display font-extrabold break-all'
+                  style={heroSize}
+                >
+                  <StaticGradientText gradient='hot'>
+                    {formatNumber(subs)}
+                  </StaticGradientText>
+                </p>
+                <p className='mt-2 text-base text-white/70'>
+                  active subscriptions
+                </p>
+              </>
+            )}
+            {provider != null && (
+              <div className='mt-6 rounded-2xl border border-(--hot)/20 bg-(--hot)/5 px-6 py-3'>
+                powered by {provider}
+              </div>
+            )}
+          </div>
+        );
+      })()
     ) : type === 'sale' ? (
-      <div className={base} style={{ background }}>
-        <StaticBlob className='-right-24 top-1/3 h-48 w-48 bg-(--neon)' />
-        <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
-        <StaticOrb className='right-[10%] top-1/4 h-2 w-2 bg-(--neon)' />
-        <StaticOrb className='left-[15%] bottom-1/4 h-2 w-2 bg-(--hot)' />
-        <p className={labelClass}>On the market</p>
-        <p
-          className='mt-2 font-display font-extrabold break-all'
-          style={heroSize}
-        >
-          <StaticGradientText gradient='neon'>
-            {formatCurrencyFull((data.askingPrice as number) ?? 0)}
-          </StaticGradientText>
-        </p>
-        <p className='mt-1 text-base text-white/60'>asking price</p>
-        <div className='mt-8 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-8 py-5'>
-          <span className='font-display text-2xl font-extrabold text-white'>
-            {((data.multiple as number) ?? 0).toFixed(1)}x
-          </span>
-          <span className='ml-2 text-base text-white/60'>revenue multiple</span>
-        </div>
-      </div>
+      (() => {
+        const price =
+          data.askingPrice != null ? (data.askingPrice as number) : null;
+        const multi = data.multiple != null ? (data.multiple as number) : null;
+        if (price == null && multi == null) return null;
+        return (
+          <div className={base} style={{ background }}>
+            <StaticBlob className='-right-24 top-1/3 h-48 w-48 bg-(--neon)' />
+            <StaticBlob className='-left-20 bottom-1/3 h-40 w-40 bg-(--hot)' />
+            <StaticOrb className='right-[10%] top-1/4 h-2 w-2 bg-(--neon)' />
+            <StaticOrb className='left-[15%] bottom-1/4 h-2 w-2 bg-(--hot)' />
+            <p className={labelClass}>On the market</p>
+            {price != null && (
+              <>
+                <p
+                  className='mt-2 font-display font-extrabold break-all'
+                  style={heroSize}
+                >
+                  <StaticGradientText gradient='neon'>
+                    {formatCurrencyFull(price)}
+                  </StaticGradientText>
+                </p>
+                <p className='mt-1 text-base text-white/60'>asking price</p>
+              </>
+            )}
+            {multi != null && (
+              <div className='mt-8 rounded-2xl border border-(--neon)/30 bg-(--neon)/5 px-8 py-5'>
+                <span className='font-display text-2xl font-extrabold text-white'>
+                  {multi.toFixed(1)}x
+                </span>
+                <span className='ml-2 text-base text-white/60'>
+                  revenue multiple
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()
     ) : type === 'outro' ? (
       <div className={base} style={{ background }}>
         <StaticBlob className='-left-20 top-1/3 h-40 w-40 bg-(--neon)' />
